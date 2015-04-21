@@ -1,3 +1,3 @@
-#diff_abundance
-Rscript
+#diff_abundance - Rscritp
+______________________________________________________________________________________________________________________________________________________________________
 Compare OTU abundances between treatments, using negative binomial normalization method.
