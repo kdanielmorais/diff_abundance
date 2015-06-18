@@ -2,7 +2,7 @@
 
 ################################################################
 # Script for detect differential abundance of OTUs in R
-# Script created by MORAIS, D.K. & BRUSTOLINI, O. 2015
+# Script created by MORAIS, D.K. & BRUSTOLINI, O. TÓTOLA, M. R. 2015
 # Contact at kdanielmorais@hotmail.com
 #
 # Version v.1 (03/04/2015)
@@ -32,7 +32,7 @@ experiments <- read.delim("data.frame.txt", stringsAsFactors = FALSE) #"data.fra
 #12BF	BF_comb	12BF
 #"
 
-grupo <- experiments[,2] # This is to select the treatments that Holmes method will compare. In this case, the 2nd column.
+grupo <- experiments[,2] # This is to select the treatments that the Edge R package will compare. In this case, the 2nd column.
 
 #Define your count matrix
 data <- read.table(file="otu_table.txt",sep="\t",header=TRUE,row.names=1) # "otu_table.txt" is a comma separated file converted from an "otu_table.biom" and edited to make "R" likes it. Here is an example.
@@ -44,7 +44,7 @@ data <- read.table(file="otu_table.txt",sep="\t",header=TRUE,row.names=1) # "otu
 #OTU_255	34.0	43.0	12.0	14.0	24.0	18.0	34.0	42.0	22.0	30.0	36.0	31.0
 #"
 
-#Rearrange your data. As the data came from qiime, the count matrix was out of order. Rearrange it according to your experimental design.
+#Rearrange your data. (If your data came from qiime, the count matrix is out of order.) Rearrange it according to your experimental design.
 mdat <- data[,c(7,10,8,11,12,2,5,9,3,6,4,1)] #This is a command to rearrange the otu_table.txt column order so the repetitions can be side by side.
 
 #Start a loop to normalize and compare treatments 2 by 2 and detect differentially abundant OTUS between your treatments.
