@@ -2,7 +2,7 @@
 
 ################################################################
 # Script for detect differential abundance of OTUs in R
-# Script created by MORAIS, D.K. & BRUSTOLINI, O. TÓTOLA, M. R. 2015
+# Script created by MORAIS, D.K.; BRUSTOLINI, O.; TÓTOLA, M. R. 2015
 # Contact at kdanielmorais@hotmail.com
 #
 # Version v.1 (03/04/2015)
@@ -47,6 +47,7 @@ data <- read.table(file="otu_table.txt",sep="\t",header=TRUE,row.names=1) # "otu
 #Rearrange your data. (If your data came from qiime, the count matrix is out of order.) Rearrange it according to your experimental design.
 mdat <- data[,c(7,10,8,11,12,2,5,9,3,6,4,1)] #This is a command to rearrange the otu_table.txt column order so the repetitions can be side by side.
 
+#loop step!!
 #Start a loop to normalize and compare treatments 2 by 2 and detect differentially abundant OTUS between your treatments.
 for (i in seq (1,7,3)) 
 	for (j in seq ((i+3),10,3)) #loop created for design with 4 treatments and 3 repetitions.
