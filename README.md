@@ -1,3 +1,3 @@
 #diff_abundance - Rscritp
 ______________________________________________________________________________________________________________________________________________________________________
-Compare OTU abundances between treatments, using negative binomial normalization method.
+Compare OTU abundances between treatments, using negative binomial normalization method!
