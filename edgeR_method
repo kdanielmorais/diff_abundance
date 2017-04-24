@@ -7,7 +7,7 @@
 #
 # Version v.1 (03/04/2015)
 #
-# *p-values will be corrected using the Benjaming-Hochberg (BH) method.
+# *p-values will be corrected using the Benjamini-Hochberg (BH) method.
 # *Counts will be normalized using the Relative Log Expression (RLE) method.
 # 
 # Usage notes: Use the loop step all at once and not line by line.
