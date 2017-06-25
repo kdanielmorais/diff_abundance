@@ -14,7 +14,7 @@
 ###############################################################
 
 library("edgeR")
-#Define the experiment desing
+#Define the experiment design
 experiments <- read.delim("data.frame.txt", stringsAsFactors = FALSE) #"data.frame.txt" is a text file similar to a qiime mapping file. It has the following structure: (ignore the # and the ")
 #"
 #SampleID	Group	Description
