@@ -1,0 +1,96 @@
+#!/usr/bin/Rscript
+
+library("edgeR")
+
+################################################################
+# Script for detect differential abundance of OTUs in R
+# Script created by MORAIS, D.K.; BRUSTOLINI, O.; OLIVEIRA, F.; TÓTOLA, M. R.
+# Contact at kdanielmorais@hotmail.com
+#
+# Created (03/04/2015)
+# Version v 1.1 
+#
+# *p-values will be corrected using the Benjamini-Hochberg (BH) method.
+# *Counts will be normalized using the Relative Log Expression (RLE) method.
+# 
+# Usage notes: Use the loop step all at once and not line by line.
+###############################################################
+
+#Define the experiment design
+
+df_experiments <- read.delim("data.frame.txt", stringsAsFactors = FALSE) #"data.frame.txt" is a text file similar to a qiime mapping file. 
+
+#It should have the following structure: *(ignore the # and the ")
+#"
+#SampleID	Group	Description
+#1BF	BF_cntrl	1BF
+#2BF	BF_cntrl	2BF
+#3BF	BF_cntrl	3BF
+#4BF	BF_bcp	4BF
+#5BF	BF_bcp	5BF
+#6BF	BF_bcp	6BF
+#7BF	BF_oil	7BF
+#8BF	BF_oil	8BF
+#9BF	BF_oil	9BF
+#10BF	BF_comb	10BF
+#11BF	BF_comb	11BF
+#12BF	BF_comb	12BF
+#"
+
+#Generate R objects of the most important components of your experiments table.
+array_groups <- df_experiments[,2]
+
+array_experiments <- df_experiments[,1]
+
+#Import your OTU table with the counts for all the samples.
+data <- read.table(file="otu_table.txt",sep="\t",header=TRUE,row.names=1, check.names=FALSE)
+
+#It should have the following structure: *(ignore the # and the ")
+#"
+#OTU_ID	12BF	6BF	9BF	11BF	7BF	10BF	1BF	3BF	8BF	2BF	4BF	5BF
+#OTU_105	1.0	9.0	0.0	0.0	5.0	2.0	7.0	10.0	3.0	4.0	2.0	6.0
+#OTU_144	8.0	6.0	1.0	1.0	5.0	1.0	5.0	7.0	8.0	3.0	4.0	6.0
+#OTU_67	376.0	273.0	500.0	261.0	396.0	294.0	437.0	271.0	314.0	326.0	424.0	469.0
+#OTU_255	34.0	43.0	12.0	14.0	24.0	18.0	34.0	42.0	22.0	30.0	36.0	31.0
+#"
+
+#Rearrange your data. (If your data came from qiime, the count matrix is out of order.) 
+#These next steps will rearrange your data according to your experimental design.
+
+array_positions_experiments <- match(array_experiments, colnames(data))
+
+mdat <- data[,array_positions_experiments]
+
+#Generating an array with the name of each group that will be compared
+array_unique_groups <- unique(array_groups) 
+
+#Generating an array with the matching order between samples and groups.
+array_positions_groups <- match(array_unique_groups, array_groups) 
+
+#Start of the testing loop. 
+
+#Attention! Before running the loop, in your working directory create a folder called "tabelasBH" where the results of the Benjamini-Hochberg corrected comparisons will be created.
+#There will be two tables for each par of treatments compared. One table with all the results and one table with only the q-values lower than 0.05.
+
+for (i in 1:(length(array_positions_groups)-1))
+	rep_i <- grep(array_groups[array_positions_groups[i]], array_groups) # getting the positions of samples and replicates in one group
+	for (j in (i+1):length(array_positions_groups)){
+		rep_j <- grep(array_groups[array_positions_groups[j]], array_groups) # getting the positions of samples and replicates in another group
+		
+		mat <- cbind (mdat[,rep_i],mdat[,rep_j]) #create a new matrix with 2 treatments(groups) and n reps.
+		
+		des <- c(rep (array_groups[array_positions_groups[i]],length(rep_i)), rep(array_groups[array_positions_groups[j]],length(rep_j)))
+		d <- DGEList (counts = mat, group = des)
+		d <- calcNormFactors(d, method="RLE")
+		d <- estimateCommonDisp(d)
+		d <- estimateTagwiseDisp(d, prior.df = getPriorN(d), grid.length = 1000)
+		
+		de <- exactTest(d, pair=c(array_groups[array_positions_groups[i]],array_groups[array_positions_groups[j]]), dispersion="auto")
+		dt <- topTags (de, n=20000, adjust.method="BH")
+		tab1 <- dt[dt$table$FDR < 0.05,]
+		tab <- dt$table
+		write.csv2 (tab, paste("./tabelasBH/",array_groups[array_positions_groups[i]], "_vs_", array_groups[array_positions_groups[j]],".csv", sep=""))
+		write.csv2 (tab1, paste("./tabelasBH/","s",array_groups[array_positions_groups[i]], "_vs1_", array_groups[array_positions_groups[j]],".csv", sep="")
+	}
+
+#The table results with the names starting with "s" (significant), means it holds only the results with q-values lower than 0.05
