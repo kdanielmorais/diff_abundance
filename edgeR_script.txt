@@ -69,28 +69,38 @@ array_positions_groups <- match(array_unique_groups, array_groups)
 
 #Start of the testing loop. 
 
-#Attention! Before running the loop, in your working directory create a folder called "tabelasBH" where the results of the Benjamini-Hochberg corrected comparisons will be created.
-#There will be two tables for each par of treatments compared. One table with all the results and one table with only the q-values lower than 0.05.
+#Attention! Before running the loop in your working directory, create a folder called "tabelasBH" where the results of the Benjamini-Hochberg corrected comparisons will be created.
+#There will be two tables for each couple of treatments compared. One table with all the results and one table with only the q-values lower than 0.05.
 
-for (i in 1:(length(array_positions_groups)-1))
-	rep_i <- grep(array_groups[array_positions_groups[i]], array_groups) # getting the positions of samples and replicates in one group
-	for (j in (i+1):length(array_positions_groups)){
-		rep_j <- grep(array_groups[array_positions_groups[j]], array_groups) # getting the positions of samples and replicates in another group
-		
-		mat <- cbind (mdat[,rep_i],mdat[,rep_j]) #create a new matrix with 2 treatments(groups) and n reps.
-		
-		des <- c(rep (array_groups[array_positions_groups[i]],length(rep_i)), rep(array_groups[array_positions_groups[j]],length(rep_j)))
-		d <- DGEList (counts = mat, group = des)
-		d <- calcNormFactors(d, method="RLE")
-		d <- estimateCommonDisp(d)
-		d <- estimateTagwiseDisp(d, prior.df = getPriorN(d), grid.length = 1000)
-		
-		de <- exactTest(d, pair=c(array_groups[array_positions_groups[i]],array_groups[array_positions_groups[j]]), dispersion="auto")
-		dt <- topTags (de, n=20000, adjust.method="BH")
-		tab1 <- dt[dt$table$FDR < 0.05,]
-		tab <- dt$table
-		write.csv2 (tab, paste("./tabelasBH/",array_groups[array_positions_groups[i]], "_vs_", array_groups[array_positions_groups[j]],".csv", sep=""))
-		write.csv2 (tab1, paste("./tabelasBH/","s",array_groups[array_positions_groups[i]], "_vs1_", array_groups[array_positions_groups[j]],".csv", sep="")
-	}
+for (i in 1:(length(array_positions_groups)-1)){
+    rep_i <- grep(sprintf("^%s$", array_groups[array_positions_groups[i]]), array_groups) # getting the positions of samples and replicates in one group
+    
+    for (j in (i+1):length(array_positions_groups)){
+        rep_j <- grep(sprintf("^%s$",array_groups[array_positions_groups[j]]), array_groups) # getting the positions of samples and replicates in another group
+        
+        mat <- cbind (mdat[,rep_i],mdat[,rep_j]) #create a new matrix with 2 treatments(groups) and n reps.
+        
+        des <- c(rep (array_groups[array_positions_groups[i]],length(rep_i)), rep(array_groups[array_positions_groups[j]],length(rep_j)))
+        d <- DGEList (counts = mat, group = des)
+        d <- calcNormFactors(d, method="RLE")
+        d <- estimateCommonDisp(d)
+        d <- estimateTagwiseDisp(d, prior.df = getPriorN(d), grid.length = 1000)
+        
+        de <- exactTest(d, pair=c(array_groups[array_positions_groups[i]],array_groups[array_positions_groups[j]]), dispersion="auto")
+        dt <- topTags (de, n=20000, adjust.method="BH")
+        tab1 <- dt[dt$table$FDR < 0.05,]
+        tab <- dt$table
+        
+        write.csv (tab, paste("./tabelasBH/",array_groups[array_positions_groups[i]], "_vs_", array_groups[array_positions_groups[j]],".csv", sep=""))
+        write.csv (tab1, paste("./tabelasBH/","s",array_groups[array_positions_groups[i]], "_vs1_", array_groups[array_positions_groups[j]],".csv", sep=""))
+    }
+}
 
-#The table results with the names starting with "s" (significant), means it holds only the results with q-values lower than 0.05
+#Understanding the output:
+#Inside the folder tabelasBH, there will be one table for every couple of comparisons. The tables having the names starting with "s" (significant), hold only the results with q-values lower than 0.05.
+
+#log2FC (log2 values of fold change) refers to the comparison among the two groups (treatments). It will show a positive value if your first group compared is more abundant than the #second and a negative value if your second group is more abundant than the first.
+#p-value represents the probility supplied by the edgeR's exact-test.
+#FDR (false discovery rate) will show the corrected p-value by the Benjamini-Hochberg procedure, this value is also called q-value.
+
+
