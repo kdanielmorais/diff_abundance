@@ -3,7 +3,7 @@
 library("edgeR")
 
 ################################################################
-# Script for detect differential abundance of OTUs in R
+# Script to detect differential abundance of OTUs in R
 # Script created by MORAIS, D.K.; BRUSTOLINI, O.; OLIVEIRA, F.; TÓTOLA, M. R.
 # Contact at kdanielmorais@hotmail.com
 #
@@ -37,13 +37,13 @@ df_experiments <- read.delim("data.frame.txt", stringsAsFactors = FALSE) #"data.
 #12BF	BF_comb	12BF
 #"
 
-#Generate R objects of the most important components of your experiments table.
+#Generate R objects of the most important components of your experiments table (SampleIDs and grouping_factors).
 array_groups <- df_experiments[,2]
 
 array_experiments <- df_experiments[,1]
 
 #Import your OTU table with the counts for all the samples.
-data <- read.table(file="otu_table.txt",sep="\t",header=TRUE,row.names=1, check.names=FALSE)
+data <- read.table(file="otu_table.txt",sep="\t", header=TRUE, row.names=1, check.names=FALSE)
 
 #It should have the following structure: *(ignore the # and the ")
 #"
@@ -92,15 +92,16 @@ for (i in 1:(length(array_positions_groups)-1)){
         tab <- dt$table
         
         write.csv (tab, paste("./tabelasBH/",array_groups[array_positions_groups[i]], "_vs_", array_groups[array_positions_groups[j]],".csv", sep=""))
-        write.csv (tab1, paste("./tabelasBH/","s",array_groups[array_positions_groups[i]], "_vs1_", array_groups[array_positions_groups[j]],".csv", sep=""))
+        write.csv (tab1, paste("./tabelasBH/","s_",array_groups[array_positions_groups[i]], "_vs_", array_groups[array_positions_groups[j]],".csv", sep=""))
     }
 }
 
 #Understanding the output:
 #Inside the folder tabelasBH, there will be one table for every couple of comparisons. The tables having the names starting with "s" (significant), hold only the results with q-values lower than 0.05.
 
-#log2FC (log2 values of fold change) refers to the comparison among the two groups (treatments). It will show a positive value if your first group compared is more abundant than the #second and a negative value if your second group is more abundant than the first.
-#p-value represents the probility supplied by the edgeR's exact-test.
+#logFC (log2 values of the fold change between the two compared treatments). It will show a negative value if your first group compared is more abundant than the second group and a positive value if your second group is more abundant than the first group.
+#logCPM(log2 average counts per million in among the two compared treatments).
+#p-value represents the probability supplied by the edgeR's exact-test.
 #FDR (false discovery rate) will show the corrected p-value by the Benjamini-Hochberg procedure, this value is also called q-value.
 
 
